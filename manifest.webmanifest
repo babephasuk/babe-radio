@@ -1,0 +1,16 @@
+{
+  "name": "วิทยุเบ๊บ",
+  "short_name": "วิทยุเบ๊บ",
+  "description": "ฟังวิทยุออนไลน์ ไม่มีโฆษณาของแอป",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#EDF0EC",
+  "theme_color": "#137A4D",
+  "lang": "th",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

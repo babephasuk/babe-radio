@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>วิทยุเบ๊บ</title>
+<meta name="theme-color" content="#137A4D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="วิทยุเบ๊บ">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #EDF0EC; --panel: #FFFFFF; --ink: #16201B; --muted: #56655C;
+  --line: #CBD4CD; --line-strong: #8FA096;
+  --gw: #137A4D; --gw-soft: #D9EFE3;
+  --cool: #2A5FB3; --cool-soft: #DCE7F7;
+  --flex: #B8420F; --flex-soft: #FBE3D6;
+  --user: #6B4FBB; --user-soft: #E6E0F5;
+  --needle: #D4402A; --on-accent: #FFFFFF;
+  --font-display: 'Bai Jamjuree', 'IBM Plex Sans Thai', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans Thai', 'Noto Sans Thai', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0E1411; --panel: #161E1A; --ink: #E8EFEA; --muted: #9AAAA1;
+    --line: #2B3730; --line-strong: #5B6C62;
+    --gw: #46CF8F; --gw-soft: #17392B;
+    --cool: #74A6F4; --cool-soft: #1A2C47;
+    --flex: #FF9A6B; --flex-soft: #3D2418;
+    --user: #B6A2F2; --user-soft: #2A2342;
+    --needle: #FF6C50; --on-accent: #0E1411;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-top: max(20px, env(safe-area-inset-top, 0px));
+  padding-bottom: max(28px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 520px; margin: 0 auto; display: grid; gap: 16px; }
+h1, h2 { margin: 0; font-family: var(--font-display); text-wrap: balance; }
+h1 { font-size: 28px; line-height: 1.2; }
+.sub { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+.dial { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 12px 8px; }
+.dial-inner { position: relative; margin: 0 22px; }
+.flags { position: relative; height: 34px; z-index: 1; }
+.flag {
+  position: absolute; top: 0; transform: translateX(-50%);
+  border: 0; border-radius: 6px; padding: 3px 6px; min-height: 28px;
+  background: var(--c); color: var(--on-accent);
+  font-family: var(--font-display); font-weight: 700; font-size: 12.5px; font-variant-numeric: tabular-nums;
+}
+.flag::after {
+  content: ""; position: absolute; left: 50%; bottom: -5px; margin-left: -5px;
+  border: 5px solid transparent; border-bottom: 0; border-top-color: var(--c);
+}
+.scale { position: relative; height: 30px; margin-top: 4px; }
+.tick { position: absolute; bottom: 0; width: 1px; height: 8px; background: var(--line-strong); }
+.tick.mid { height: 14px; }
+.tick.major { height: 24px; }
+.labels { position: relative; height: 22px; }
+.lbl { position: absolute; top: 2px; transform: translateX(-50%); font-family: var(--font-display); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.needle {
+  position: absolute; top: 0; bottom: 22px; width: 2px; margin-left: -1px;
+  background: var(--needle); border-radius: 1px; pointer-events: none;
+  transition: left .5s cubic-bezier(.3,.8,.3,1), opacity .2s;
+}
+.dial.live .needle { box-shadow: 0 0 0 3px color-mix(in srgb, var(--needle) 28%, transparent); }
+
+.stations { display: grid; gap: 12px; }
+.station {
+  --c: var(--gw); --c-soft: var(--gw-soft);
+  display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 4px 14px; align-items: center;
+  padding: 16px; background: var(--panel); border: 1.5px solid var(--line); border-radius: 14px;
+}
+.station[data-id="cool"] { --c: var(--cool); --c-soft: var(--cool-soft); }
+.station[data-id="flex"] { --c: var(--flex); --c-soft: var(--flex-soft); }
+.station[data-user="true"] { --c: var(--user); --c-soft: var(--user-soft); }
+.station[data-active="true"] { border-color: var(--c); background: var(--c-soft); }
+.station h2 { font-size: 21px; line-height: 1.25; overflow-wrap: anywhere; }
+.freq { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--c); font-variant-numeric: tabular-nums; }
+.freq small { font-size: 12px; font-weight: 500; letter-spacing: .06em; }
+.play {
+  grid-row: 1 / span 2; grid-column: 2; width: 64px; height: 64px; border-radius: 50%; border: 0;
+  background: var(--c); color: var(--on-accent); display: grid; place-items: center;
+}
+.play svg { width: 26px; height: 26px; fill: currentColor; }
+.play .i-stop { display: none; }
+.station[data-playing="true"] .i-play { display: none; }
+.station[data-playing="true"] .i-stop { display: block; }
+.status { grid-column: 1 / -1; margin: 8px 0 0; font-size: 14px; color: var(--muted); min-height: 21px; }
+.station[data-playing="true"] .status { color: var(--ink); }
+.status.bad { color: var(--needle); }
+.tools { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; }
+.tools:empty { display: none; }
+.mini { min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--bg); font-size: 14px; }
+
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px 16px; }
+.box h2 { font-size: 17px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--bg); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.count { margin: 10px 0 0; font-size: 14px; color: var(--muted); min-height: 21px; font-variant-numeric: tabular-nums; }
+form { display: grid; gap: 10px; margin-top: 10px; }
+label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
+input[type=text], input[type=url], input[type=number] {
+  min-height: 44px; padding: 0 12px; border-radius: 10px; border: 1.5px solid var(--line-strong);
+  background: var(--bg); color: var(--ink); width: 100%;
+}
+.row { display: grid; grid-template-columns: 1fr 110px; gap: 10px; }
+.add { min-height: 46px; border-radius: 10px; border: 0; background: var(--ink); color: var(--bg); font-weight: 600; }
+.msg { margin: 0; font-size: 14px; min-height: 21px; color: var(--muted); }
+.msg.bad { color: var(--needle); }
+.note { margin: 0; font-size: 13px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .needle { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>วิทยุเบ๊บ</h1>
+    <p class="sub">แตะคลื่นที่อยากฟัง เสียงมาจากสตรีมของสถานีโดยตรง</p>
+  </header>
+
+  <section class="dial" id="dial" aria-label="หน้าปัดวิทยุ FM">
+    <div class="dial-inner">
+      <div class="flags" id="flags"></div>
+      <div class="scale" id="scale"></div>
+      <div class="labels" id="labels"></div>
+      <div class="needle" id="needle"></div>
+    </div>
+  </section>
+
+  <section class="stations" id="stations" aria-label="สถานีวิทยุ"></section>
+
+  <section class="box" aria-label="ตั้งเวลาปิดเสียง">
+    <h2>ตั้งเวลาปิดเสียง</h2>
+    <div class="chips" id="chips"></div>
+    <p class="count" id="count" aria-live="polite"></p>
+  </section>
+
+  <section class="box" aria-label="เพิ่มคลื่นเอง">
+    <h2>เพิ่มคลื่นเอง</h2>
+    <form id="addForm" autocomplete="off">
+      <label>ชื่อคลื่น<input type="text" id="addName" required maxlength="40" placeholder="เช่น Chill 89.0"></label>
+      <div class="row">
+        <label>ลิงก์สตรีม (.m3u8 / .aac / .mp3)<input type="url" id="addUrl" required placeholder="https://…"></label>
+        <label>ความถี่ (ไม่ใส่ก็ได้)<input type="number" id="addFreq" step="0.1" min="88" max="108" inputmode="decimal" placeholder="95.5"></label>
+      </div>
+      <button class="add" type="submit">เพิ่มคลื่น</button>
+      <p class="msg" id="addMsg" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <p class="note">ถ้าเสียงหลุด แอปจะลองเชื่อมต่อใหม่ให้เอง ตัวสตรีมมีโฆษณาของสถานีตามปกติ แต่ไม่มีโฆษณาของแอป</p>
+  <audio id="player" preload="none" playsinline></audio>
+</main>
+
+<script>
+(function () {
+  var BASE = [
+    { id: 'greenwave', name: 'Green Wave', freq: 106.5, urls: [
+      'https://atimehd.smartclick.co.th/greenwave/hls/greenwave.m3u8',
+      'https://atimeonline2.smartclick.co.th/green' ] },
+    { id: 'cool', name: 'COOL Fahrenheit', freq: 93.0, urls: [
+      'https://coolism-web.cdn.byteark.com/;stream/1' ] },
+    { id: 'flex', name: 'Flex 104.5', freq: 104.5, urls: [
+      'https://streaming.flexconnect.net/voiceflex/voiceflex/playlist.m3u8' ] }
+  ];
+  var DIAL_MIN = 88, DIAL_MAX = 108, MAX_RETRY = 4;
+  var TIMERS = [{ m: 0, t: 'ไม่ตั้งเวลา' }, { m: 15, t: '15 นาที' }, { m: 30, t: '30 นาที' }, { m: 60, t: '1 ชั่วโมง' }, { m: 90, t: '1.5 ชั่วโมง' }];
+
+  var audio = document.getElementById('player');
+  var dial = document.getElementById('dial');
+  var needle = document.getElementById('needle');
+  var stationsEl = document.getElementById('stations');
+  var flagsEl = document.getElementById('flags');
+  var count = document.getElementById('count');
+
+  function store(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+  var custom = [];
+  try { custom = JSON.parse(load('bebe-radio-custom') || '[]').filter(function (c) { return c && c.id && c.name && c.urls && c.urls.length; }); } catch (e) {}
+  var STATIONS = BASE.concat(custom.map(function (c) { c.user = true; return c; }));
+
+  var selected = STATIONS[0].id;
+  var current = null;      // the station the person wants playing
+  var suspended = false;   // another app took the audio; keep the station, wait for resume
+  var retries = 0, urlIndex = 0, retryTimer = 0, quietUntil = 0;
+  var sleepEnd = 0, sleepTick = 0, sleepMinutes = 0;
+
+  var savedSel = load('bebe-radio-station');
+  if (savedSel && STATIONS.some(function (s) { return s.id === savedSel; })) selected = savedSel;
+
+  function byId(id) { return STATIONS.filter(function (s) { return s.id === id; })[0]; }
+  function pos(f) { return ((f - DIAL_MIN) / (DIAL_MAX - DIAL_MIN)) * 100; }
+  function fmt(f) { return f.toFixed(1); }
+  function readIdx(s) { var k = Number(load('bebe-radio-src-' + s.id)); return (k >= 0 && k < s.urls.length) ? k : 0; }
+
+  /* dial scale */
+  var scale = document.getElementById('scale'), labels = document.getElementById('labels');
+  for (var f = DIAL_MIN; f <= DIAL_MAX + 0.001; f += 0.5) {
+    var t = document.createElement('span');
+    var whole = Math.abs(f - Math.round(f)) < 0.001;
+    t.className = 'tick' + (whole ? ((Math.round(f) % 4 === 0) ? ' major' : ' mid') : '');
+    t.style.left = pos(f) + '%';
+    scale.appendChild(t);
+    if (whole && Math.round(f) % 4 === 0) {
+      var l = document.createElement('span');
+      l.className = 'lbl'; l.textContent = Math.round(f); l.style.left = pos(f) + '%';
+      labels.appendChild(l);
+    }
+  }
+
+  function cardOf(id) { return stationsEl.querySelector('[data-id="' + id + '"]'); }
+  function setStatus(id, text, bad) {
+    var c = cardOf(id); if (!c) return;
+    var el = c.querySelector('.status');
+    el.textContent = text;
+    el.classList.toggle('bad', !!bad);
+  }
+
+  function build() {
+    flagsEl.textContent = '';
+    stationsEl.textContent = '';
+    STATIONS.forEach(function (s) {
+      if (typeof s.freq === 'number' && isFinite(s.freq)) {
+        var b = document.createElement('button');
+        b.className = 'flag'; b.type = 'button';
+        b.style.left = pos(s.freq) + '%';
+        b.style.setProperty('--c', s.user ? 'var(--user)' : s.id === 'cool' ? 'var(--cool)' : s.id === 'flex' ? 'var(--flex)' : 'var(--gw)');
+        b.textContent = fmt(s.freq);
+        b.setAttribute('aria-label', 'เลือก ' + s.name + ' ' + fmt(s.freq) + ' FM');
+        b.addEventListener('click', function () { toggle(s.id); });
+        flagsEl.appendChild(b);
+      }
+      var card = document.createElement('article');
+      card.className = 'station';
+      card.setAttribute('data-id', s.id);
+      if (s.user) card.setAttribute('data-user', 'true');
+      card.innerHTML =
+        '<h2></h2><p class="freq"></p>' +
+        '<button class="play" type="button">' +
+          '<svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg>' +
+          '<svg class="i-stop" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>' +
+        '</button>' +
+        '<p class="status" aria-live="polite"></p><div class="tools"></div>';
+      card.querySelector('h2').textContent = s.name;
+      var fq = card.querySelector('.freq');
+      if (typeof s.freq === 'number' && isFinite(s.freq)) fq.innerHTML = fmt(s.freq) + ' <small>FM</small>';
+      else fq.textContent = 'ออนไลน์';
+      card.querySelector('.play').addEventListener('click', function () { toggle(s.id); });
+      var tools = card.querySelector('.tools');
+      if (s.urls.length > 1) {
+        var sw = document.createElement('button');
+        sw.type = 'button'; sw.className = 'mini'; sw.textContent = 'สลับลิงก์เสียง';
+        sw.addEventListener('click', function () { switchLink(s.id); });
+        tools.appendChild(sw);
+      }
+      if (s.user) {
+        var rm = document.createElement('button');
+        rm.type = 'button'; rm.className = 'mini'; rm.textContent = 'ลบคลื่นนี้';
+        rm.addEventListener('click', function () { removeCustom(s.id); });
+        tools.appendChild(rm);
+      }
+      stationsEl.appendChild(card);
+    });
+    render();
+  }
+
+  function render() {
+    STATIONS.forEach(function (s) {
+      var card = cardOf(s.id);
+      var playing = current === s.id && !suspended;
+      card.setAttribute('data-active', String(selected === s.id));
+      card.setAttribute('data-playing', String(playing));
+      card.querySelector('.play').setAttribute('aria-label', (playing ? 'หยุดฟัง ' : 'ฟัง ') + s.name);
+      if (current !== s.id && !card.querySelector('.status').classList.contains('bad')) {
+        setStatus(s.id, selected === s.id ? 'แตะปุ่มเพื่อเริ่มฟัง' : '', false);
+      }
+    });
+    var sel = byId(selected);
+    var has = sel && typeof sel.freq === 'number' && isFinite(sel.freq);
+    needle.style.opacity = has ? '1' : '0';
+    if (has) needle.style.left = pos(sel.freq) + '%';
+    dial.classList.toggle('live', !!current && !suspended);
+  }
+
+  function setSession(s) {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      navigator.mediaSession.metadata = s ? new MediaMetadata({ title: s.name, artist: (typeof s.freq === 'number' ? fmt(s.freq) + ' FM' : 'ออนไลน์'), album: 'วิทยุเบ๊บ' }) : null;
+      navigator.mediaSession.playbackState = s ? 'playing' : 'none';
+    } catch (e) {}
+  }
+
+  function play(s) {
+    quietUntil = Date.now() + 800;
+    audio.src = s.urls[urlIndex];
+    var p = audio.play();
+    if (p && p.catch) p.catch(function () { fail(s.id); });
+  }
+
+  function start(id) {
+    var s = byId(id); if (!s) return;
+    clearTimeout(retryTimer);
+    if (current && current !== id) setStatus(current, '', false);
+    selected = id; current = id; retries = 0; suspended = false;
+    store('bebe-radio-station', id);
+    urlIndex = readIdx(s);
+    cardOf(id).querySelector('.status').classList.remove('bad');
+    setStatus(id, 'กำลังเชื่อมต่อ…', false);
+    play(s);
+    setSession(s);
+    render();
+  }
+
+  function stop() {
+    var id = current;
+    current = null; suspended = false;
+    clearTimeout(retryTimer);
+    quietUntil = Date.now() + 800;
+    audio.pause(); audio.removeAttribute('src'); audio.load();
+    if (id) setStatus(id, 'หยุดแล้ว', false);
+    setSession(null);
+    render();
+  }
+
+  function toggle(id) { if (current === id && !suspended) stop(); else start(id); }
+
+  function switchLink(id) {
+    var s = byId(id);
+    urlIndex = ((current === id ? urlIndex : readIdx(s)) + 1) % s.urls.length;
+    store('bebe-radio-src-' + id, String(urlIndex));
+    if (current === id) { retries = 0; setStatus(id, 'ใช้ลิงก์ ' + (urlIndex + 1) + '/' + s.urls.length + ' กำลังเชื่อมต่อ…', false); play(s); }
+    else setStatus(id, 'เลือกลิงก์ ' + (urlIndex + 1) + '/' + s.urls.length + ' แล้ว', false);
+  }
+
+  function fail(id) {
+    if (current !== id) return;
+    var s = byId(id), n = s.urls.length;
+    if (retries < MAX_RETRY * n) {
+      retries++;
+      urlIndex = (urlIndex + 1) % n;
+      setStatus(id, 'สัญญาณหลุด กำลังลองใหม่ (' + retries + ')…', false);
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(function () { if (current === id) play(s); }, 2000);
+    } else {
+      current = null; suspended = false;
+      quietUntil = Date.now() + 800;
+      audio.pause(); audio.removeAttribute('src'); audio.load();
+      setSession(null);
+      setStatus(id, 'เล่นไม่ได้ ตรวจอินเทอร์เน็ตแล้วแตะเล่นอีกครั้ง', true);
+      render();
+    }
+  }
+
+  audio.addEventListener('playing', function () {
+    if (!current) return;
+    retries = 0; suspended = false;
+    var s = byId(current);
+    store('bebe-radio-src-' + current, String(urlIndex));
+    setStatus(current, 'กำลังเล่นสด' + (s.urls.length > 1 ? ' (ลิงก์ ' + (urlIndex + 1) + '/' + s.urls.length + ')' : ''), false);
+    setSession(s);
+    render();
+  });
+  audio.addEventListener('waiting', function () { if (current && !suspended) setStatus(current, 'กำลังเชื่อมต่อ…', false); });
+  audio.addEventListener('stalled', function () { if (current && !suspended) setStatus(current, 'สัญญาณช้า กำลังรอ…', false); });
+  audio.addEventListener('error', function () { if (current) fail(current); });
+  audio.addEventListener('ended', function () { if (current) fail(current); });
+  audio.addEventListener('pause', function () {
+    // the phone paused us (video, call, lock screen). Keep the station and wait for resume.
+    if (current && Date.now() > quietUntil) {
+      suspended = true;
+      setStatus(current, 'หยุดชั่วคราว แตะเล่นเพื่อฟังต่อ', false);
+      try { navigator.mediaSession.playbackState = 'paused'; } catch (e) {}
+      render();
+    }
+  });
+
+  if ('mediaSession' in navigator) {
+    try {
+      navigator.mediaSession.setActionHandler('play', function () { start(current || selected); });
+      navigator.mediaSession.setActionHandler('pause', function () { audio.pause(); });
+      navigator.mediaSession.setActionHandler('stop', stop);
+      var step = function (d) {
+        return function () {
+          var i = STATIONS.map(function (s) { return s.id; }).indexOf(selected);
+          start(STATIONS[(i + d + STATIONS.length) % STATIONS.length].id);
+        };
+      };
+      navigator.mediaSession.setActionHandler('nexttrack', step(1));
+      navigator.mediaSession.setActionHandler('previoustrack', step(-1));
+    } catch (e) {}
+  }
+
+  /* sleep timer */
+  var chips = document.getElementById('chips');
+  TIMERS.forEach(function (o) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = o.t;
+    b.setAttribute('data-m', o.m);
+    b.setAttribute('aria-pressed', String(o.m === 0));
+    b.addEventListener('click', function () { setSleep(o.m); });
+    chips.appendChild(b);
+  });
+  function paintChips() {
+    Array.prototype.forEach.call(chips.children, function (b) {
+      b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-m')) === sleepMinutes));
+    });
+  }
+  function paintCount() {
+    if (!sleepEnd) { count.textContent = ''; return; }
+    var left = Math.max(0, Math.round((sleepEnd - Date.now()) / 1000));
+    if (left <= 0) {
+      sleepEnd = 0; sleepMinutes = 0; clearInterval(sleepTick); paintChips();
+      if (current) stop();
+      count.textContent = 'ปิดเสียงตามเวลาที่ตั้งแล้ว';
+      return;
+    }
+    var m = Math.floor(left / 60), s = left % 60;
+    count.textContent = 'จะปิดเสียงในอีก ' + m + ':' + (s < 10 ? '0' : '') + s + ' นาที';
+  }
+  function setSleep(min) {
+    clearInterval(sleepTick);
+    sleepMinutes = min;
+    sleepEnd = min ? Date.now() + min * 60000 : 0;
+    paintChips(); paintCount();
+    if (min) sleepTick = setInterval(paintCount, 1000);
+  }
+  document.addEventListener('visibilitychange', function () { if (sleepEnd) paintCount(); });
+
+  /* custom stations */
+  function saveCustom() {
+    store('bebe-radio-custom', JSON.stringify(custom.map(function (c) { return { id: c.id, name: c.name, freq: c.freq, urls: c.urls }; })));
+  }
+  function removeCustom(id) {
+    if (!window.confirm('ลบคลื่นนี้ออกจากแอป?')) return;
+    if (current === id) stop();
+    custom = custom.filter(function (c) { return c.id !== id; });
+    saveCustom();
+    STATIONS = BASE.concat(custom);
+    if (selected === id) selected = STATIONS[0].id;
+    build();
+  }
+  var addMsg = document.getElementById('addMsg');
+  document.getElementById('addForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('addName').value.trim();
+    var url = document.getElementById('addUrl').value.trim();
+    var fr = document.getElementById('addFreq').value.trim();
+    addMsg.classList.remove('bad');
+    if (!/^https?:\/\//i.test(url)) { addMsg.textContent = 'ลิงก์ต้องขึ้นต้นด้วย http:// หรือ https://'; addMsg.classList.add('bad'); return; }
+    var freq = fr === '' ? null : Number(fr);
+    if (freq !== null && !(freq >= DIAL_MIN && freq <= DIAL_MAX)) { addMsg.textContent = 'ความถี่ต้องอยู่ระหว่าง 88–108'; addMsg.classList.add('bad'); return; }
+    var c = { id: 'u' + Date.now().toString(36), name: name, freq: freq, urls: [url], user: true };
+    custom.push(c);
+    saveCustom();
+    STATIONS = BASE.concat(custom);
+    build();
+    document.getElementById('addForm').reset();
+    addMsg.textContent = 'เพิ่ม "' + name + '" แล้ว แตะปุ่มเล่นด้านบนเพื่อทดสอบ';
+  });
+
+  build();
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>
